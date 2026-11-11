@@ -9,13 +9,15 @@ class Produto(
     @Id @GeneratedValue
     var id: Long? = null,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     var nome: String = "",
 
+    @Column(length = 500)
     var descricao: String? = null,
 
+    @Column(nullable = false, precision = 10, scale = 2)
     var preco: BigDecimal = BigDecimal.ZERO,
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     var categoria: Categoria? = null
 )

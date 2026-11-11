@@ -1,7 +1,9 @@
 package br.pucpr.papelaria
 
+import br.pucpr.papelaria.exceptions.RequisicaoInvalidaException
 import br.pucpr.papelaria.produto.SortDir
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 class SortDirTest {
@@ -11,7 +13,12 @@ class SortDirTest {
     }
 
     @Test
-    fun `find retorna ASC para outros valores`() {
-        assertEquals(SortDir.ASC, SortDir.find("qualquer"))
+    fun `find aceita asc`() {
+        assertEquals(SortDir.ASC, SortDir.find("asc"))
+    }
+
+    @Test
+    fun `find rejeita valores invalidos`() {
+        assertThrows<RequisicaoInvalidaException> { SortDir.find("qualquer") }
     }
 }

@@ -3,6 +3,9 @@ package br.pucpr.papelaria.produto
 import br.pucpr.papelaria.produto.requests.ProdutoRequest
 import br.pucpr.papelaria.produto.responses.ProdutoResponse
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.PositiveOrZero
+import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,11 +18,13 @@ class ProdutoController(
 ) {
     @GetMapping
     fun list(
-        @RequestParam(required = false) categoria: Long?,
-        @RequestParam(required = false) precoMax: BigDecimal?,
+        @RequestParam(required = false) @Positive categoria: Long?,
+        @RequestParam(required = false) @PositiveOrZero precoMin: BigDecimal?,
+        @RequestParam(required = false) @PositiveOrZero precoMax: BigDecimal?,
+        @RequestParam(required = false) @Size(max = 100) nome: String?,
         @RequestParam(defaultValue = "id") ordenar: String,
         @RequestParam(defaultValue = "asc") direcao: String
-    ) = service.findAll(categoria, precoMax, ordenar, SortDir.find(direcao))
+    ) = service.findAll(categoria, precoMin, precoMax, nome, ordenar, SortDir.find(direcao))
         .map { ProdutoResponse(it) }
         .let { ResponseEntity.ok(it) }
 

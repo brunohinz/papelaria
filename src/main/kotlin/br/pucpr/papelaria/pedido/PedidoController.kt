@@ -33,4 +33,10 @@ class PedidoController(
     @DeleteMapping("/{id}/itens/{produtoId}")
     fun removeItem(@PathVariable id: Long, @PathVariable produtoId: Long) =
         ResponseEntity.ok(PedidoResponse(service.removeItem(id, produtoId)))
+
+    @DeleteMapping("/{id}")
+    fun delete(@PathVariable id: Long): ResponseEntity<Void> {
+        service.delete(id)
+        return ResponseEntity.noContent().build()
+    }
 }

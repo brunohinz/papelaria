@@ -10,9 +10,10 @@ class Pedido(
     @Id @GeneratedValue
     var id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     var cliente: Cliente? = null,
 
+    @Column(nullable = false)
     var data: LocalDateTime = LocalDateTime.now(),
 
     @OneToMany(mappedBy = "pedido", cascade = [CascadeType.ALL], orphanRemoval = true)

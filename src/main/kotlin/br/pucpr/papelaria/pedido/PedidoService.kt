@@ -48,6 +48,13 @@ class PedidoService(
         return repository.save(pedido)
     }
 
+    @Transactional
+    fun delete(id: Long) {
+        // os itens saem junto (cascade + orphanRemoval)
+        repository.delete(findById(id))
+        log.info("Pedido removido: {}", id)
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(PedidoService::class.java)
     }

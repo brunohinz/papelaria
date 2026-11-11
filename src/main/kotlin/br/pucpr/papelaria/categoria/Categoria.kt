@@ -8,7 +8,7 @@ class Categoria(
     @Id @GeneratedValue
     var id: Long? = null,
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 50)
     var nome: String = "",
 
     @OneToMany(mappedBy = "categoria")

@@ -9,6 +9,7 @@ import br.pucpr.papelaria.produto.ProdutoRepository
 import jakarta.transaction.Transactional
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
 
@@ -16,13 +17,14 @@ import java.math.BigDecimal
 class BootStrapper(
     val usuarioRepository: UsuarioRepository,
     val categoriaRepository: CategoriaRepository,
-    val produtoRepository: ProdutoRepository
+    val produtoRepository: ProdutoRepository,
+    val passwordEncoder: PasswordEncoder
 ) : ApplicationListener<ContextRefreshedEvent> {
 
     @Transactional
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
         if (usuarioRepository.findByUsuario("admin") == null) {
-            usuarioRepository.save(Usuario(usuario = "admin", senha = "admin123"))
+            usuarioRepository.save(Usuario(usuario = "admin", senha = passwordEncoder.encode("admin123")!!))
         }
         if (categoriaRepository.count() == 0L) {
             val cadernos = categoriaRepository.save(Categoria(nome = "Cadernos"))
