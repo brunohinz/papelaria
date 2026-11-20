@@ -11,7 +11,7 @@ Sistema de papelaria: categorias de produtos (cadernos, canetas, etc.), clientes
 
 ## Vídeo
 <!-- TODO: colar aqui o link do vídeo no YouTube (pode ser não listado) -->
-Link do vídeo: _a adicionar_
+Link do vídeo: https://youtu.be/BsiqXESF5pA
 
 ## Tecnologias
 Kotlin, Spring Boot, Spring Data JPA, H2 (em memória), Bean Validation, Spring Security + JWT (jjwt) com senhas em BCrypt, springdoc-openapi (Swagger UI).
