@@ -15,7 +15,7 @@ class OpenApiConfig {
         .info(
             Info()
                 .title("Backend Papelaria")
-                .description("API de papelaria (categorias, produtos, clientes e pedidos)")
+                .description("API de papelaria (categorias, produtos, clientes e pedidos). GET e publico. POST e PUT exigem login. DELETE exige papel ADMIN.")
                 .version("0.0.1")
         )
         .components(
@@ -25,7 +25,7 @@ class OpenApiConfig {
                     .type(SecurityScheme.Type.HTTP)
                     .scheme("bearer")
                     .bearerFormat("JWT")
-                    .description("Cole o JWT retornado por POST /auth/login (sem o prefixo Bearer)")
+                    .description("Cole o JWT retornado por POST /auth/login (sem o prefixo Bearer). O token carrega o papel ADMIN ou USER.")
             )
         )
         .addSecurityItem(SecurityRequirement().addList("bearer-jwt"))

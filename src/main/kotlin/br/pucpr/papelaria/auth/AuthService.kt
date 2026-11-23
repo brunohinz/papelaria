@@ -20,8 +20,8 @@ class AuthService(
             log.warn("Login invalido: {}", usuario)
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario ou senha invalidos")
         }
-        log.info("Login realizado: {}", usuario)
-        return jwt.createToken(user.usuario)
+        log.info("Login realizado: {} ({})", usuario, user.role)
+        return jwt.createToken(user.usuario, user.role.name)
     }
 
     companion object {

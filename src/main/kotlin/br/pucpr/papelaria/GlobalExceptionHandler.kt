@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -43,6 +44,10 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException::class)
     fun status(e: ResponseStatusException) = erro(HttpStatus.valueOf(e.statusCode.value()), e.reason)
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun acessoNegado(e: AccessDeniedException) =
+        erro(HttpStatus.FORBIDDEN, "Acesso negado").also { log.warn("Acesso negado: {}", e.message) }
 
     // @Valid no corpo da requisicao
     @ExceptionHandler(MethodArgumentNotValidException::class)

@@ -2,6 +2,10 @@ package br.pucpr.papelaria.auth
 
 import jakarta.persistence.*
 
+enum class Role {
+    ADMIN, USER
+}
+
 @Entity
 class Usuario(
     @Id @GeneratedValue
@@ -12,5 +16,9 @@ class Usuario(
 
     // hash BCrypt (60 caracteres), nunca a senha em texto puro
     @Column(nullable = false, length = 100)
-    var senha: String = ""
+    var senha: String = "",
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    var role: Role = Role.USER
 )
