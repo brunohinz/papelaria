@@ -17,7 +17,7 @@ Link do vídeo: https://youtu.be/BsiqXESF5pA
 Kotlin, Spring Boot, Spring Data JPA, H2 (em memória), Bean Validation, Spring Security + JWT (jjwt) com senhas em BCrypt, springdoc-openapi (Swagger UI).
 
 ## Como rodar
-Precisa de JDK 17 ou mais novo.
+Precisa de JDK 17 ou mais novo. O build usa o JDK da máquina (o JDK 21 da disciplina funciona direto, sem baixar um JDK 17) e gera bytecode Java 17.
 
 ```
 ./gradlew bootRun
@@ -30,11 +30,11 @@ Cada pacote tem Entity, Repository, Service, Controller e os DTOs em `requests/`
 ```
 br.pucpr.papelaria
 ├── BackendPapelariaApplication.kt
-├── BootStrapper.kt            (usuário admin e dados iniciais)
+├── BootStrapper.kt            (usuários admin/user e dados iniciais)
 ├── GlobalExceptionHandler.kt
 ├── OpenApiConfig.kt           (Swagger / OpenAPI + JWT Authorize)
 ├── RootController.kt          (GET /health)
-├── auth/        Usuario, UsuarioRepository, AuthService, AuthController, requests/, responses/
+├── auth/        Usuario (Role ADMIN/USER), UsuarioRepository, AuthService, AuthController, requests/, responses/
 ├── categoria/   Categoria, CategoriaRepository, CategoriaService, CategoriaController, requests/, responses/
 ├── produto/     Produto, ProdutoRepository, ProdutoService, ProdutoController, SortDir, requests/, responses/
 ├── cliente/     Cliente, ClienteRepository, ClienteService, ClienteController, requests/, responses/
@@ -44,7 +44,12 @@ br.pucpr.papelaria
 ```
 
 ## Dados iniciais
-O `BootStrapper` cria o usuário `admin`/`admin123` (senha gravada com hash BCrypt) e, se o banco estiver vazio, as categorias Cadernos e Canetas com alguns produtos.
+O `BootStrapper` cria dois usuários (senha gravada com hash BCrypt) e, se o banco estiver vazio, as categorias Cadernos e Canetas com alguns produtos.
+
+| usuário | senha | papel |
+|---|---|---|
+| admin | admin123 | ADMIN |
+| user | user123 | USER |
 
 ## Classes e relações
 - Categoria 1 - N Produto
@@ -58,17 +63,18 @@ Com a API no ar:
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 Para testar POST/PUT/DELETE no Swagger:
-1. Chame `POST /auth/login` com `{"usuario":"admin","senha":"admin123"}` e copie o `token`.
+1. Chame `POST /auth/login` com `{"usuario":"admin","senha":"admin123"}` (ou `user`/`user123`) e copie o `token`.
 2. Clique em **Authorize**, cole só o JWT (sem a palavra `Bearer`) e confirme.
-3. As operações protegidas passam a enviar `Authorization: Bearer <token>`.
+3. As operações protegidas passam a enviar `Authorization: Bearer <token>`. DELETE com o usuário `user` responde 403; com `admin`, segue a regra de negócio.
 
 ## Autenticação
-GETs são públicos. POST, PUT e DELETE precisam de token.
+GETs são públicos. POST e PUT exigem login (ADMIN ou USER). DELETE exige papel ADMIN.
 
 ```
 POST /auth/login  {"usuario":"admin","senha":"admin123"}
+POST /auth/login  {"usuario":"user","senha":"user123"}
 ```
-Usar o token retornado no header `Authorization: Bearer <token>`.
+Usar o token retornado no header `Authorization: Bearer <token>`. O JWT traz o papel do usuário.
 
 ## Endpoints
 | Método | Rota | Descrição |
@@ -78,23 +84,23 @@ Usar o token retornado no header `Authorization: Bearer <token>`.
 | GET | /categorias/{id} | busca categoria |
 | POST | /categorias | cria categoria |
 | PUT | /categorias/{id} | atualiza categoria |
-| DELETE | /categorias/{id} | remove categoria (409 se tiver produtos) |
+| DELETE | /categorias/{id} | remove categoria (409 se tiver produtos). Somente ADMIN |
 | GET | /produtos?categoria=&nome=&precoMin=&precoMax=&ordenar=&direcao= | lista com filtro e ordenação (ordenar: id, nome, preco; direcao: asc, desc) |
 | GET | /produtos/{id} | busca produto |
 | POST | /produtos | cria produto |
 | PUT | /produtos/{id} | atualiza produto |
-| DELETE | /produtos/{id} | remove produto (409 se estiver em algum pedido) |
+| DELETE | /produtos/{id} | remove produto (409 se estiver em algum pedido). Somente ADMIN |
 | GET | /clientes | lista clientes |
 | GET | /clientes/{id} | busca cliente |
 | POST | /clientes | cria cliente |
 | PUT | /clientes/{id} | atualiza cliente |
-| DELETE | /clientes/{id} | remove cliente (409 se tiver pedidos) |
+| DELETE | /clientes/{id} | remove cliente (409 se tiver pedidos). Somente ADMIN |
 | GET | /pedidos | lista pedidos |
 | GET | /pedidos/{id} | busca pedido |
 | POST | /pedidos | cria pedido `{"clienteId":1}` |
 | POST | /pedidos/{id}/itens | adiciona produto `{"produtoId":1,"quantidade":2}` |
-| DELETE | /pedidos/{id}/itens/{produtoId} | remove produto do pedido |
-| DELETE | /pedidos/{id} | remove pedido (e seus itens) |
+| DELETE | /pedidos/{id}/itens/{produtoId} | remove produto do pedido. Somente ADMIN |
+| DELETE | /pedidos/{id} | remove pedido (e seus itens). Somente ADMIN |
 
 Exemplo de consulta: `GET /produtos?nome=caneta&precoMax=10&ordenar=preco&direcao=desc`
 
@@ -119,6 +125,7 @@ Tratados em `GlobalExceptionHandler` (@RestControllerAdvice). Todas as respostas
 |---|---|
 | 400 | validação falhou, JSON mal formado, parâmetro com tipo errado (ex.: `/produtos/abc`), filtro inválido, `PedidoInvalidoException` |
 | 401 | sem token / token inválido em POST, PUT, DELETE; login com usuário ou senha errados |
+| 403 | usuário autenticado sem papel ADMIN em DELETE (`Acesso negado`) |
 | 404 | recurso não encontrado (`NaoEncontradoException`, `ProdutoNaoEncontradoException`) |
 | 409 | `ConflitoException`: nome/e-mail duplicado, ou remoção de registro em uso (categoria com produtos, produto em pedido, cliente com pedidos) |
 | 500 | erro inesperado (registrado no log com stack trace) |
@@ -127,4 +134,4 @@ Tratados em `GlobalExceptionHandler` (@RestControllerAdvice). Todas as respostas
 ```
 ./gradlew test
 ```
-`ApiIntegrationTest` cobre autenticação, validações, filtros, conflitos (409) e o fluxo pedido → itens; `SortDirTest` cobre a direção de ordenação.
+Os `*ServiceTest` são unitários: mockam repositórios (MockK) e cobrem preço congelado no item do pedido, conflitos, filtros e validações. `AutorizacaoTest` verifica que USER recebe 403 no DELETE (no formato do tratamento global) e que ADMIN consegue remover. `ApiIntegrationTest` cobre o fluxo HTTP; `SortDirTest` cobre a direção de ordenação.

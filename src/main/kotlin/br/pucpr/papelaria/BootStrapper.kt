@@ -1,5 +1,6 @@
 package br.pucpr.papelaria
 
+import br.pucpr.papelaria.auth.Role
 import br.pucpr.papelaria.auth.Usuario
 import br.pucpr.papelaria.auth.UsuarioRepository
 import br.pucpr.papelaria.categoria.Categoria
@@ -24,7 +25,10 @@ class BootStrapper(
     @Transactional
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
         if (usuarioRepository.findByUsuario("admin") == null) {
-            usuarioRepository.save(Usuario(usuario = "admin", senha = passwordEncoder.encode("admin123")!!))
+            usuarioRepository.save(Usuario(usuario = "admin", senha = passwordEncoder.encode("admin123")!!, role = Role.ADMIN))
+        }
+        if (usuarioRepository.findByUsuario("user") == null) {
+            usuarioRepository.save(Usuario(usuario = "user", senha = passwordEncoder.encode("user123")!!, role = Role.USER))
         }
         if (categoriaRepository.count() == 0L) {
             val cadernos = categoriaRepository.save(Categoria(nome = "Cadernos"))
